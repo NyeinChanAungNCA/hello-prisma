@@ -34,3 +34,44 @@ Finally, set up Prisma ORM with the init command of the Prisma CLI:
     $    npx prisma init --datasource-provider sqlite
 
 This creates a new prisma directory with a prisma.schema file and configures SQLite as your database. You're now ready to model your data and create your database with some tables.
+
+## 2. Model your data in the Prisma schema
+The Prisma schema provides an intuitive way to model data. Add the following models to your schema.prisma file
+
+```
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  posts Post[]
+}
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean @default(false)
+  author    User    @relation(fields: [authorId], references: [id])
+  authorId  Int
+}
+```
+Models in the Prisma schema have two main purposes:
+
+Represent the tables in the underlying database
+1. Serve as foundation for the generated Prisma Client API
+2. In the next section, you will map these models to database tables using Prisma Migrate.
+
+## 3. Run a migration to create your database tables with Prisma Migrate
+At this point, you have a Prisma schema but no database yet. Run the following command in your terminal to create the SQLite database and the User and Post tables represented by your models:
+
+    $    npx prisma migrate dev --name init
+
+This command did three things:
+
+1. It created a new SQL migration file for this migration in the prisma/migrations directory.
+2. It executed the SQL migration file against the database.
+3. It ran prisma generate under the hood (which installed the @prisma/client package and generated a tailored Prisma Client API based on your models).
+
+Because the SQLite database file didn't exist before, the command also created it inside the prisma directory with the name dev.db as defined via the environment variable in the .env file.
+
+Congratulations, you now have your database and tables ready.
